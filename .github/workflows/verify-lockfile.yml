@@ -1,0 +1,38 @@
+name: Verify clean install and generate lockfile
+on:
+  push:
+    branches: [codex/guild-desk-lockfile-verification]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.22.1'
+      - name: Report toolchain
+        run: |
+          node --version
+          npm --version
+      - name: Resolve locked dependencies
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Preserve generated lockfile in verification log
+        run: |
+          node --input-type=module -e "import fs from 'node:fs'; console.log('LOCKFILE_BASE64=' + fs.readFileSync('package-lock.json').toString('base64'));"
+      - name: Install from lockfile in a clean workspace
+        run: npm ci --no-audit --no-fund
+      - name: Run model tests
+        run: npm test
+      - name: Typecheck and build production and standalone outputs
+        run: npm run build
+      - name: Check build outputs and unchanged lockfile
+        run: |
+          test -s dist/index.html
+          test -s release/guild-desk.html
+          cmp release/guild-desk.html docs/index.html
+          node --input-type=module -e "import fs from 'node:fs'; const lock=JSON.parse(fs.readFileSync('package-lock.json')); if (lock.lockfileVersion !== 3) throw new Error('Expected lockfile v3');"
