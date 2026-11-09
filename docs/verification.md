@@ -1,8 +1,24 @@
 # 검증 기록
 
-2026-11-03 · 로컬 0.1.0
+## 2026-11-09 · 깨끗한 설치와 lockfile
 
-## 수행함
+[GitHub Actions 검증 실행](https://github.com/chirpyworks/guild-desk/actions/runs/42578592127)에서 새 Ubuntu 24.04 러너로 확인했습니다.
+
+- Node.js 24.22.1 / npm 11.19.1.
+- 기존 `node_modules` 없이 `npm install --package-lock-only --ignore-scripts --no-audit --no-fund`로 실제 npm lockfile v3을 생성했습니다.
+- 생성한 lockfile로 `npm ci --no-audit --no-fund`가 성공했습니다. 기존 로컬 의존성을 링크하거나 재사용하지 않았습니다.
+- `npm test`: 모델 테스트 7개 통과, 실패 0개.
+- `npm run build`: TypeScript 타입 검사, Vite 8.0.13 프로덕션 빌드, 독립 HTML 생성 통과.
+- `dist/index.html`과 `release/guild-desk.html`이 비어 있지 않고, `docs/index.html`과 독립 HTML이 동일함을 확인했습니다.
+- PR의 `package-lock.json`은 위 실행에서 npm이 생성한 파일입니다. 직접 의존성 버전은 변경하지 않았습니다.
+
+상시 CI는 `.nvmrc`의 Node 버전을 사용하며, PR·main 푸시·수동 실행마다 `npm ci`, 테스트, 빌드와 출력 파일 검사를 수행합니다. 설치·빌드가 `package.json` 또는 `package-lock.json`을 변경하면 실패합니다. CI는 코드를 배포하거나 생성 HTML을 자동 커밋하지 않습니다.
+
+이 검증은 고정된 의존성으로 새 환경에서 설치·테스트·빌드가 가능함을 확인한 것입니다. 모든 운영체제에서 산출물이 바이트 단위로 동일하다는 검증은 아니며, 2026-11-03의 실제 브라우저 상호작용 검사를 다시 수행한 것도 아닙니다. 아래 기록의 clean install 미검증은 당시 상태이며 이번 실행으로 해소했습니다.
+
+## 2026-11-03 · 로컬 0.1.0 (이전 검증)
+
+### 수행함
 
 - Node 24.22.1, TypeScript 5.9.3 타입 검사 통과.
 - Vite 8.0.13 프로덕션 빌드 통과. React / React DOM 19.2.6.
@@ -18,7 +34,7 @@
 
 - 수정 후 새 퀘스트 생성 → 되돌리기에서 전체 13→12개, 오늘 마감 3→2개, 선택 항목 Q-013→Q-001 및 빈 활동 기록 복원을 확인했습니다.
 
-## 제약
+### 제약
 
 - 레지스트리 네트워크 정책으로 새 패키지 설치가 차단되어, 기존 로컬 의존성을 링크해 빌드했습니다. 기존 프로젝트의 소스는 변경하지 않았습니다. dev 캐시는 이 프로젝트 안에 분리했습니다.
 - 새 컴퓨터에서의 clean install과 package-lock 생성은 아직 검증하지 않았습니다.
