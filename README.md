@@ -23,16 +23,20 @@ GitHub 파일 화면에서는 HTML이 실행되지 않습니다. `release/guild-
 
 ## 개발
 
-Node.js 22.13 이상과 npm이 필요합니다. 패키지는 `package.json`에 직접 의존성 버전을 명시했습니다. 현재 배포본은 기존 설치 의존성으로 빌드했고, 새 환경에서의 `npm install` 검증과 lockfile 생성은 아직 수행하지 못했습니다.
+Node.js 22.13 이상과 npm이 필요합니다. 재현 가능한 개발·CI 환경은 `.nvmrc`의 Node.js 24.22.1과 함께 제공되는 npm 11.19.1을 기준으로 검증했습니다. nvm을 사용한다면 먼저 `nvm install && nvm use`를 실행하세요.
+
+직접 의존성은 `package.json`에, 전이 의존성과 무결성 해시는 `package-lock.json`에 고정했습니다. 처음 설치하거나 CI에서 설치할 때는 `npm ci`를 사용합니다.
 
 ```sh
-npm install
+npm ci
 npm run dev
 npm test
 npm run build
 ```
 
 빌드는 `dist/`의 정적 사이트와 `release/guild-desk.html` 독립 실행 파일을 만듭니다. `dist/`는 정적 호스팅에 올릴 수 있습니다. 인증·DB·서버 API는 포함하지 않습니다.
+
+`.github/workflows/ci.yml`은 PR, `main` 푸시, 수동 실행에서 깨끗한 설치 → 모델 테스트 7개 → 타입 검사·프로덕션 빌드 → 독립 HTML 생성과 파일 검사를 수행합니다. 배포나 생성 HTML의 자동 커밋은 하지 않습니다. 의존성을 변경할 때만 `npm install`로 lockfile을 갱신하고 두 의존성 파일을 함께 검토하세요.
 
 ## 내 프로젝트에 가져오기
 
